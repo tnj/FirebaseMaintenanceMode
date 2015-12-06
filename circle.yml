@@ -1,0 +1,23 @@
+machine:
+  environment:
+    TERM: dumb
+
+dependencies:
+  cache_directories:
+    - ~/.android
+    - ~/.gradle
+  override:
+    - ./gradlew dependencies
+
+test:
+  override:
+    - ./gradlew :app:assembleDebug -PdisablePreDex
+    - ./gradlew test -PdisablePreDex
+    - cp -fr app/build/outputs $CIRCLE_ARTIFACTS
+
+deployment:
+  deploygate:
+    commands:
+      - |
+        ./gradlew :app:uploadDeployGateDebug -PDEPLOYGATE_USER_NAME=$DEPLOYGATE_USER_NAME -PDEPLOYGATE_API_TOKEN=$DEPLOYGATE_API_TOKEN -PBUILD_MESSAGE="Branch=`git symbolic-ref --short HEAD`
+        `git log --pretty=oneline --abbrev-commit -1`"

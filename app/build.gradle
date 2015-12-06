@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'deploygate'
 
 android {
     compileSdkVersion 23
@@ -21,6 +22,20 @@ android {
         exclude 'META-INF/LICENSE'
         exclude 'META-INF/LICENSE-FIREBASE.txt'
         exclude 'META-INF/NOTICE'
+    }
+}
+
+if (project.hasProperty("DEPLOYGATE_USER_NAME")) {
+    deploygate {
+        userName = DEPLOYGATE_USER_NAME
+        token = DEPLOYGATE_API_TOKEN
+        apks {
+            debug {
+                if (project.hasProperty("BUILD_MESSAGE")) {
+                    message = BUILD_MESSAGE
+                }
+            }
+        }
     }
 }
 
