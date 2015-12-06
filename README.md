@@ -1,5 +1,7 @@
 # FirebaseMaintenanceMode
 
+[![Circle CI](https://circleci.com/gh/tnj/FirebaseMaintenanceMode/tree/master.svg?style=svg)](https://circleci.com/gh/tnj/FirebaseMaintenanceMode/tree/master) [<img src="https://dply.me/c5mmvs/button/small" alt="Download to device">](https://dply.me/c5mmvs#install)
+
 A simple Firebase implementation to tell your users what is going on when your backends in trouble. 
 
 ![out2](https://cloud.githubusercontent.com/assets/140446/11614270/dbf74a74-9c80-11e5-9800-03ab2176a9ff.gif)
