@@ -9,17 +9,16 @@ import com.squareup.otto.Bus;
 import com.squareup.otto.ThreadEnforcer;
 
 public class MaintenanceMode {
-    private static final String FIREBASE_ROOT = "https://fiery-inferno-8489.firebaseio.com/status";
     private static Status lastStatus;
     private static Bus bus;
 
-    public static void init() {
+    public static void init(String rootUrl) {
         bus = new Bus(ThreadEnforcer.MAIN);
-        setupFirebase();
+        setupFirebase(rootUrl);
     }
 
-    private static void setupFirebase() {
-        Firebase statusRef = new Firebase(FIREBASE_ROOT);
+    private static void setupFirebase(String root) {
+        Firebase statusRef = new Firebase(root);
         statusRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
