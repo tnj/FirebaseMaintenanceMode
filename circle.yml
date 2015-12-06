@@ -17,6 +17,7 @@ test:
 
 deployment:
   deploygate:
+    branch: /.+/
     commands:
       - |
         ./gradlew :app:uploadDeployGateDebug -PDEPLOYGATE_USER_NAME=$DEPLOYGATE_USER_NAME -PDEPLOYGATE_API_TOKEN=$DEPLOYGATE_API_TOKEN -PBUILD_MESSAGE="Branch=`git symbolic-ref --short HEAD`
