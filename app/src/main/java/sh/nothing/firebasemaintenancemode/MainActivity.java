@@ -35,13 +35,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        MaintenanceMode.bus().register(this);
+        MaintenanceMode.register(this);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        MaintenanceMode.bus().unregister(this);
+        MaintenanceMode.unregister(this);
     }
 
     @Produce
