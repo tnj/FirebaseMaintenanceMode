@@ -9,7 +9,11 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.squareup.otto.Produce;
+import com.squareup.otto.Subscribe;
+
 public class MainActivity extends AppCompatActivity {
+    private Snackbar bar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,6 +30,33 @@ public class MainActivity extends AppCompatActivity {
                     .setAction("Action", null).show();
             }
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        MaintenanceMode.bus().register(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        MaintenanceMode.bus().unregister(this);
+    }
+
+    @Produce
+    public MaintenanceMode.Status getCurrentMaintenanceMode() {
+        return MaintenanceMode.current();
+    }
+
+    @Subscribe
+    public void maintenanceModeChanged(MaintenanceMode.Status status) {
+        if (!status.isActive()) {
+            bar = Snackbar.make(findViewById(R.id.coordinatorLayout), status.getMessage(), Snackbar.LENGTH_INDEFINITE);
+            bar.show();
+        } else if (bar != null && bar.isShown()) {
+            bar.dismiss();
+        }
     }
 
     @Override
