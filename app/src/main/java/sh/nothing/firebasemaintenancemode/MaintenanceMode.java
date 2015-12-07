@@ -12,7 +12,7 @@ public class MaintenanceMode {
     private static Status lastStatus;
     private static Bus bus;
 
-    private static Integer count;
+    private static Integer listenerCount;
     private static Firebase statusRef;
     private static ValueEventListener listener = new ValueEventListener() {
         @Override
@@ -31,24 +31,24 @@ public class MaintenanceMode {
         if (bus == null) {
             bus = new Bus(ThreadEnforcer.MAIN);
             statusRef = new Firebase(rootUrl);
-            count = 0;
+            listenerCount = 0;
         }
     }
 
     public static void register(Object listener) {
         bus.register(listener);
-        synchronized (count) {
-            if (listener == 0)
+        synchronized (listenerCount) {
+            if (listenerCount == 0)
                 setOnline();
-            count++;
+            listenerCount++;
         }
     }
 
     public static void unregister(Object listener) {
         bus.unregister(listener);
-        synchronized (count) {
-            count--;
-            if (listener == 0)
+        synchronized (listenerCount) {
+            listenerCount--;
+            if (listenerCount == 0)
                 setOffline();
         }
     }
