@@ -14,6 +14,7 @@ import com.squareup.otto.Subscribe;
 
 public class MainActivity extends AppCompatActivity {
     private Snackbar bar;
+    private MaintenanceMode maintenanceMode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,23 +31,25 @@ public class MainActivity extends AppCompatActivity {
                     .setAction("Action", null).show();
             }
         });
+
+        maintenanceMode = MaintenanceMode.getInstance();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        MaintenanceMode.getInstance().register(this);
+        maintenanceMode.register(this);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        MaintenanceMode.getInstance().unregister(this);
+        maintenanceMode.unregister(this);
     }
 
     @Produce
     public MaintenanceMode.Status getCurrentMaintenanceMode() {
-        return MaintenanceMode.getInstance().current();
+        return maintenanceMode.current();
     }
 
     @Subscribe
