@@ -35,18 +35,18 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        MaintenanceMode.register(this);
+        MaintenanceMode.getInstance().register(this);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        MaintenanceMode.unregister(this);
+        MaintenanceMode.getInstance().unregister(this);
     }
 
     @Produce
     public MaintenanceMode.Status getCurrentMaintenanceMode() {
-        return MaintenanceMode.current();
+        return MaintenanceMode.getInstance().current();
     }
 
     @Subscribe

@@ -1,5 +1,8 @@
 package sh.nothing.firebasemaintenancemode;
 
+import android.support.annotation.Nullable;
+import android.support.annotation.VisibleForTesting;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
@@ -9,12 +12,15 @@ import com.squareup.otto.Bus;
 import com.squareup.otto.ThreadEnforcer;
 
 public class MaintenanceMode {
-    private static Status lastStatus;
-    private static Bus bus;
+    private static MaintenanceMode instance;
 
-    private static Integer listenerCount;
-    private static Firebase statusRef;
-    private static ValueEventListener listener = new ValueEventListener() {
+    private Status lastStatus;
+    private Bus bus;
+    private Integer listenerCount;
+    private Firebase statusRef;
+    private boolean isOnline;
+
+    private ValueEventListener listener = new ValueEventListener() {
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
             lastStatus = dataSnapshot.getValue(Status.class);
@@ -28,14 +34,27 @@ public class MaintenanceMode {
     };
 
     public static void init(String rootUrl) {
-        if (bus == null) {
-            bus = new Bus(ThreadEnforcer.MAIN);
-            statusRef = new Firebase(rootUrl);
-            listenerCount = 0;
-        }
+        if (instance == null)
+            instance = new MaintenanceMode(rootUrl);
     }
 
-    public static void register(Object listener) {
+    public static MaintenanceMode getInstance() {
+        if (instance == null)
+            throw new IllegalStateException("You have to call MaintenanceMode.init(String) first");
+        return instance;
+    }
+
+    private MaintenanceMode(String rootUrl) {
+        this(new Firebase(rootUrl));
+    }
+
+    private MaintenanceMode(Firebase firebase) {
+        bus = new Bus(ThreadEnforcer.MAIN);
+        statusRef = firebase;
+        listenerCount = 0;
+    }
+
+    public void register(Object listener) {
         bus.register(listener);
         synchronized (listenerCount) {
             if (listenerCount == 0)
@@ -44,7 +63,7 @@ public class MaintenanceMode {
         }
     }
 
-    public static void unregister(Object listener) {
+    public void unregister(Object listener) {
         bus.unregister(listener);
         synchronized (listenerCount) {
             listenerCount--;
@@ -53,16 +72,40 @@ public class MaintenanceMode {
         }
     }
 
-    private static void setOnline() {
+    private void setOnline() {
         statusRef.addValueEventListener(listener);
+        isOnline = true;
     }
 
-    private static void setOffline() {
+    private void setOffline() {
         statusRef.removeEventListener(listener);
+        isOnline = false;
     }
 
-    public static Status current() {
+    public Status current() {
         return lastStatus;
+    }
+
+    @VisibleForTesting
+    static void init(Firebase firebase) {
+        if (instance == null)
+            instance = new MaintenanceMode(firebase);
+    }
+
+    @VisibleForTesting
+    int getListenerCount() {
+        return listenerCount;
+    }
+
+    @VisibleForTesting
+    boolean isOnline() {
+        return isOnline;
+    }
+
+    @VisibleForTesting
+    static void shutdown() {
+        instance.setOffline();
+        instance = null;
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
