@@ -12,8 +12,11 @@ dependencies:
 test:
   override:
     - ./gradlew :app:assembleDebug -PdisablePreDex
-    - ./gradlew test -PdisablePreDex
+    - ./gradlew :app:testDebug -PdisablePreDex
     - cp -fr app/build/outputs $CIRCLE_ARTIFACTS
+  post:
+    - mkdir -p $CIRCLE_TEST_REPORTS/junit
+    - cp -a app/build/test-results/* $CIRCLE_TEST_REPORTS/junit
 
 deployment:
   deploygate:
