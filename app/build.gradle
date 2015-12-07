@@ -3,7 +3,7 @@ apply plugin: 'deploygate'
 
 android {
     compileSdkVersion 23
-    buildToolsVersion "23.0.1"
+    buildToolsVersion "23.0.2"
 
     defaultConfig {
         applicationId "sh.nothing.firebasemaintenancemode"
@@ -11,6 +11,11 @@ android {
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
+    }
+    signingConfigs {
+        debug {
+            storeFile file("../debug.keystore")
+        }
     }
     buildTypes {
         release {
