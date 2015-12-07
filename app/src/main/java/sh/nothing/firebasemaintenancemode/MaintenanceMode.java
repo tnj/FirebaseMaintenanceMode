@@ -1,6 +1,5 @@
 package sh.nothing.firebasemaintenancemode;
 
-import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -15,10 +14,9 @@ public class MaintenanceMode {
     private static MaintenanceMode instance;
 
     private Status lastStatus;
-    private Bus bus;
-    private Integer listenerCount;
-    private Firebase statusRef;
-    private boolean isOnline;
+    private final Bus bus;
+    private int listenerCount;
+    final Firebase statusRef;
 
     private ValueEventListener listener = new ValueEventListener() {
         @Override
@@ -56,7 +54,7 @@ public class MaintenanceMode {
 
     public void register(Object listener) {
         bus.register(listener);
-        synchronized (listenerCount) {
+        synchronized (bus) {
             if (listenerCount == 0)
                 setOnline();
             listenerCount++;
@@ -65,7 +63,7 @@ public class MaintenanceMode {
 
     public void unregister(Object listener) {
         bus.unregister(listener);
-        synchronized (listenerCount) {
+        synchronized (bus) {
             listenerCount--;
             if (listenerCount == 0)
                 setOffline();
@@ -74,12 +72,10 @@ public class MaintenanceMode {
 
     private void setOnline() {
         statusRef.addValueEventListener(listener);
-        isOnline = true;
     }
 
     private void setOffline() {
         statusRef.removeEventListener(listener);
-        isOnline = false;
     }
 
     public Status current() {
@@ -98,14 +94,11 @@ public class MaintenanceMode {
     }
 
     @VisibleForTesting
-    boolean isOnline() {
-        return isOnline;
-    }
-
-    @VisibleForTesting
     static void shutdown() {
-        instance.setOffline();
-        instance = null;
+        if (instance != null) {
+            instance.setOffline();
+            instance = null;
+        }
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)

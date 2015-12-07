@@ -1,44 +1,49 @@
 package sh.nothing.firebasemaintenancemode;
 
-import com.firebase.client.ChildEventListener;
 import com.firebase.client.Firebase;
+import com.firebase.client.ValueEventListener;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RobolectricGradleTestRunner;
-import org.robolectric.annotation.Config;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(RobolectricGradleTestRunner.class)
-@Config(constants = BuildConfig.class, sdk = 21)
 public class MaintenanceModeTest  {
 
-    @BeforeClass
-    public static void setUp() {
-        Firebase firebase = mock(Firebase.class);
-        when(firebase.addChildEventListener(any(ChildEventListener.class))).thenReturn(null);
-        doNothing().when(firebase).removeEventListener(any(ChildEventListener.class));
+    private Firebase firebase;
 
-        MaintenanceMode.init(firebase);
+    @Before
+    public void setUp() {
+        firebase = mock(Firebase.class);
+        when(firebase.addValueEventListener(any(ValueEventListener.class))).thenReturn(null);
+        doNothing().when(firebase).removeEventListener(any(ValueEventListener.class));
     }
 
-    @AfterClass
-    public static void tearDown() {
+    @After
+    public void tearDown() {
         MaintenanceMode.shutdown();
     }
 
     @Test
+    public void testNoInit() {
+        try {
+            MaintenanceMode.getInstance();
+            fail("should throw exception");
+        } catch (Exception ignored) {
+        }
+    }
+
+    @Test
     public void testGetInstance() {
+        MaintenanceMode.init(firebase);
         // duplicate init call: this should be silently ignored
         MaintenanceMode.init("https://localhost");
         assertNotNull(MaintenanceMode.getInstance());
@@ -46,14 +51,16 @@ public class MaintenanceModeTest  {
 
     @Test
     public void testCounter() {
+        MaintenanceMode.init(firebase);
         MaintenanceMode instance = MaintenanceMode.getInstance();
+        assertEquals(firebase, instance.statusRef);
 
         instance.register(this);
-        assertTrue(instance.isOnline());
         assertEquals(1, instance.getListenerCount());
+        verify(firebase).addValueEventListener(any(ValueEventListener.class));
 
         instance.unregister(this);
-        assertFalse(instance.isOnline());
         assertEquals(0, instance.getListenerCount());
+        verify(firebase).removeEventListener(any(ValueEventListener.class));
     }
 }
